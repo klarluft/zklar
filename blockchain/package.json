@@ -1,0 +1,37 @@
+{
+  "name": "blockchain",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": false,
+  "main": "typechain/index.js",
+  "typings": "typechain/index.d.ts",
+  "scripts": {
+    "hardhat:compile": "npx hardhat compile",
+    "typechain:generate": "typechain --target=ethers-v5 \"./artifacts/contracts/DepositVerifierContract.sol/Verifier.json\" --out-dir \"./typechain\"",
+    "typechain:compile": "tsc --p tsconfig.typechain.json",
+    "hardhat:test": "npx hardhat test",
+    "build": "yarn hardhat:compile && yarn typechain:generate && yarn typechain:compile",
+    "hardhat:deploy": "npx hardhat run --network localhost scripts/deploy.ts",
+    "hardhat:seed": "npx hardhat run --network localhost scripts/seed.ts",
+    "hardhat:simulate-actions": "npx hardhat run --network localhost scripts/simulate-actions.ts",
+    "hardhat:node": "npx hardhat node",
+    "deploy": "yarn hardhat:compile && yarn typechain:generate && yarn hardhat:deploy",
+    "test": "yarn hardhat:compile && yarn typechain:generate && yarn hardhat:test"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^3.3.0",
+    "@typechain/ethers-v5": "^7.1.0",
+    "@types/chai": "^4.2.14",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.22",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^3.2.1",
+    "ethers": "^5.1.3",
+    "hardhat": "^2.6.8",
+    "ts-node": "^9.1.1",
+    "typechain": "^5.1.2",
+    "typescript": "^4.1.3"
+  }
+}

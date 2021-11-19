@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["dom", "es7"],
+    "rootDir": "./typechain",
+    "outDir": "./typechain",
+    "types": ["node"],
+    "typeRoots": ["./typechain"],
+    "declaration": true
+  },
+  "includes": ["typechain"],
+  "exclude": [
+    "./node_modules",
+    "./artifacts",
+    "./cache",
+    "./contracts",
+    "./dist",
+    "./scripts",
+    "./src",
+    "./test",
+    "./hardhat.config.ts"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "arbitrum-messages",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Michal Wrzosek <michal@wrzosek.pl>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "blockchain",
+    "ethereum",
+    "client",
+    "zk-proofs"
+  ],
+  "scripts": {
+    "start": "yarn workspace client start"
+  },
+  "dependencies": {
+    "ethereum-cryptography": "^0.1.3"
+  },
+  "devDependencies": {}
+}

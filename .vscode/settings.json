@@ -1,0 +1,7 @@
+{
+  "cSpell.userWords": [], // only use words from .cspell.json
+  "cSpell.enabled": true,
+  "editor.formatOnSave": true,
+  "solidity.compileUsingRemoteVersion": "v0.8.0+commit.c7dfd78e",
+  "eslint.workingDirectories": ["blockchain", "client"]
+}

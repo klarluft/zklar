@@ -1,0 +1,9 @@
+build
+client/src/contracts
+.DS_Store
+
+.eslintcache
+node_modules
+temp_*
+yarn-error.log
+tsconfig.tsbuildinfo

@@ -1,0 +1,58 @@
+import "hashes/poseidon/poseidon" as poseidon
+
+struct MerkleProofStep {
+  field other_digest
+  bool is_right
+}
+
+def merkleTreeProof<NrOfSteps>( \
+  field root_digest, \
+  field leaf_digest, \
+  field leaf_index, \
+  MerkleProofStep[NrOfSteps] merkle_proof \
+) -> bool:
+  field current_digest = poseidon([leaf_index, leaf_digest])
+
+  for u32 i in 0..NrOfSteps do
+    MerkleProofStep current_step = merkle_proof[i]
+
+    field left = if current_step.is_right \
+      then current_digest \
+      else current_step.other_digest \
+    fi
+
+    field right = if current_step.is_right \
+      then current_step.other_digest \
+      else current_digest \
+    fi
+
+    current_digest = poseidon([left, right])
+  endfor
+
+  assert(current_digest == root_digest)
+
+  return true
+
+def main( \
+  field old_root_digest, \
+  field old_leaf_digest, \
+  field new_root_digest, \
+  field new_leaf_digest, \
+  field leaf_index, \
+  private MerkleProofStep[10] merkle_proof, \
+):
+  assert(verifyMerkleProof( \
+    old_root_digest, \
+    old_leaf_digest, \
+    leaf_index, \
+    merkle_proof \
+  ))
+
+  assert(verifyMerkleProof( \
+    new_root_digest, \
+    new_leaf_digest, \
+    leaf_index, \
+    merkle_proof \
+  ))
+
+  return
