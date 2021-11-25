@@ -21,7 +21,7 @@ def main( \
   private field nonce, \
   field amount, \
   private field owner_digest \
-) -> bool:
+):
   assert(verifyNewDigest( \
     leaf_digest, \
     nonce, \
@@ -29,4 +29,4 @@ def main( \
     owner_digest \
   ))
 
-  return true
+  return

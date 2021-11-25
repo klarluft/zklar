@@ -74,7 +74,7 @@ def main( \
   field new_leaf_digest, \
   u32 leaf_index, \
   field[32] siblings \
-) -> bool:
+):
   assert(merkleTreeProof( \
     old_root_digest, \
     old_leaf_digest, \
@@ -89,4 +89,4 @@ def main( \
     siblings \
   ))
 
-  return true
+  return

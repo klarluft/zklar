@@ -1,0 +1,3 @@
+[submodule "zk-proofs/src/circuits/circomlib"]
+	path = zk-proofs/src/circuits/circomlib
+	url = https://github.com/iden3/circomlib

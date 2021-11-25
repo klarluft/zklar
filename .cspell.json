@@ -8,6 +8,7 @@
         "bitjson",
         "cimg",
         "circleci",
+        "circom",
         "codecov",
         "commitlint",
         "dependabot",

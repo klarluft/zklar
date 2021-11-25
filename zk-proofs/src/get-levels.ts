@@ -1,4 +1,4 @@
-import { default as poseidon } from "circomlib/src/poseidon";
+import { poseidon } from "circomlibjs";
 
 export function getLevels(leafs: BigInt[], nrOfDigestsPerDigest: number): BigInt[][] {
   const digests = leafs;

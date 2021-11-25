@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { default as poseidon } from "circomlib/src/poseidon";
+import { poseidon } from "circomlibjs";
 import { numToZok } from "../utils/num-to-zok";
 import { ObjectID } from "bson";
 

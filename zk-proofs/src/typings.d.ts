@@ -5,8 +5,17 @@ type FixedSizeArray<N extends number, T> = N extends 0
       length: N;
     } & ReadonlyArray<T>;
 
-declare module "circomlib/src/poseidon" {
+declare module "circomlib-legacy/src/poseidon" {
   export default function (inputs: Array<BigInt | number>): BigInt;
+}
+declare module "circomlibjs" {
+  export interface PoseidonFunction {
+    (inputs: Array<bigint | number>): Uint8Array;
+    F: {
+      toObject: (input: Uint8Array) => bigint;
+    };
+  }
+  export function buildPoseidon(): Promise<PoseidonFunction>;
 }
 declare module "zokrates-js/node";
 // declare module "babyjubjub";
@@ -92,3 +101,5 @@ declare module "*.json" {
   const value: any;
   export default value;
 }
+
+declare module "circom_tester";

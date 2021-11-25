@@ -1,4 +1,4 @@
-import poseidon from "circomlib/src/poseidon";
+import { poseidon } from "circomlibjs";
 import { getLevels } from "./get-levels";
 import { getProof, ProofStep } from "./get-proof";
 
