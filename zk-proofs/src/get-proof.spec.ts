@@ -1,12 +1,18 @@
-import { poseidon } from "circomlibjs";
 import { getLevels } from "./get-levels";
+import { getPoseidon, Poseidon } from "./get-poseidon";
 import { getProof, ProofStep } from "./get-proof";
 
 describe("get-proof", () => {
+  let poseidon: Poseidon;
+
+  beforeAll(async () => {
+    poseidon = await getPoseidon();
+  });
+
   it("works for first leaf", () => {
     const nrOfDigestsPerDigest = 3;
     const leafs = [...new Array(nrOfDigestsPerDigest * nrOfDigestsPerDigest)].map((_, index) => poseidon([index]));
-    const levels = getLevels(leafs, nrOfDigestsPerDigest);
+    const levels = getLevels(poseidon, leafs, nrOfDigestsPerDigest);
     const leafDigest = leafs[0];
     const proof = getProof(leafDigest, levels, nrOfDigestsPerDigest);
     const expectedProof: ProofStep[] = [
@@ -20,7 +26,7 @@ describe("get-proof", () => {
   it("works for last leaf", () => {
     const nrOfDigestsPerDigest = 3;
     const leafs = [...new Array(nrOfDigestsPerDigest * nrOfDigestsPerDigest)].map((_, index) => poseidon([index]));
-    const levels = getLevels(leafs, nrOfDigestsPerDigest);
+    const levels = getLevels(poseidon, leafs, nrOfDigestsPerDigest);
     const leafDigest = leafs[8];
     const proof = getProof(leafDigest, levels, nrOfDigestsPerDigest);
     const expectedProof: ProofStep[] = [

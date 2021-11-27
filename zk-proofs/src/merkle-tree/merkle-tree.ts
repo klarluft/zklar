@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
-import { poseidon } from "circomlibjs";
 import { numToZok } from "../utils/num-to-zok";
 import { ObjectID } from "bson";
+import { getPoseidon } from "..";
 
 const username = "root";
 const password = "password";
@@ -51,6 +51,7 @@ async function closeMongoConnection() {
 
 export async function createMerkleTree() {
   try {
+    const poseidon = await getPoseidon();
     const { nodesCollection, nodeStatus, nodesStatusCollection } = await setUpMongoConnection();
 
     const { currentLevel, currentIndex } = nodeStatus;

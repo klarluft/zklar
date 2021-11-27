@@ -20,22 +20,30 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface TransactionVerifierContractInterface extends ethers.utils.Interface {
   functions: {
-    "verifyTx(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256[5])": FunctionFragment;
+    "verifyProof(uint256[2],uint256[2][2],uint256[2],uint256[6])": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "verifyTx",
+    functionFragment: "verifyProof",
     values: [
-      {
-        a: { X: BigNumberish; Y: BigNumberish };
-        b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-        c: { X: BigNumberish; Y: BigNumberish };
-      },
-      [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+      [BigNumberish, BigNumberish],
+      [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+      [BigNumberish, BigNumberish],
+      [
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish
+      ]
     ]
   ): string;
 
-  decodeFunctionResult(functionFragment: "verifyTx", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "verifyProof",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -84,13 +92,12 @@ export class TransactionVerifierContract extends BaseContract {
   interface: TransactionVerifierContractInterface;
 
   functions: {
-    verifyTx(
-      proof: {
-        a: { X: BigNumberish; Y: BigNumberish };
-        b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-        c: { X: BigNumberish; Y: BigNumberish };
-      },
+    verifyProof(
+      a: [BigNumberish, BigNumberish],
+      b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+      c: [BigNumberish, BigNumberish],
       input: [
+        BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,
@@ -101,13 +108,12 @@ export class TransactionVerifierContract extends BaseContract {
     ): Promise<[boolean] & { r: boolean }>;
   };
 
-  verifyTx(
-    proof: {
-      a: { X: BigNumberish; Y: BigNumberish };
-      b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-      c: { X: BigNumberish; Y: BigNumberish };
-    },
+  verifyProof(
+    a: [BigNumberish, BigNumberish],
+    b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+    c: [BigNumberish, BigNumberish],
     input: [
+      BigNumberish,
       BigNumberish,
       BigNumberish,
       BigNumberish,
@@ -118,13 +124,12 @@ export class TransactionVerifierContract extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
-    verifyTx(
-      proof: {
-        a: { X: BigNumberish; Y: BigNumberish };
-        b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-        c: { X: BigNumberish; Y: BigNumberish };
-      },
+    verifyProof(
+      a: [BigNumberish, BigNumberish],
+      b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+      c: [BigNumberish, BigNumberish],
       input: [
+        BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,
@@ -138,13 +143,12 @@ export class TransactionVerifierContract extends BaseContract {
   filters: {};
 
   estimateGas: {
-    verifyTx(
-      proof: {
-        a: { X: BigNumberish; Y: BigNumberish };
-        b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-        c: { X: BigNumberish; Y: BigNumberish };
-      },
+    verifyProof(
+      a: [BigNumberish, BigNumberish],
+      b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+      c: [BigNumberish, BigNumberish],
       input: [
+        BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,
@@ -156,13 +160,12 @@ export class TransactionVerifierContract extends BaseContract {
   };
 
   populateTransaction: {
-    verifyTx(
-      proof: {
-        a: { X: BigNumberish; Y: BigNumberish };
-        b: { X: [BigNumberish, BigNumberish]; Y: [BigNumberish, BigNumberish] };
-        c: { X: BigNumberish; Y: BigNumberish };
-      },
+    verifyProof(
+      a: [BigNumberish, BigNumberish],
+      b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
+      c: [BigNumberish, BigNumberish],
       input: [
+        BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,

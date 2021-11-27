@@ -6,6 +6,7 @@ include "./verify-new-commitment.circom";
 
 template VerifyTransaction(nrOfLevels) {
   signal input rootDigest;
+
   signal input commitment0Nullifier;
   signal input commitment0Digest;
   signal input commitment0Nonce;
@@ -120,4 +121,10 @@ template VerifyTransaction(nrOfLevels) {
   log(isVerified);
 }
 
-component main {public [rootDigest]} = VerifyTransaction(256);
+component main { public [
+  rootDigest,
+  commitment0Nullifier,
+  commitment1Nullifier,
+  newCommitment0Digest,
+  newCommitment1Digest
+] } = VerifyTransaction(256);

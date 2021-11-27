@@ -9,6 +9,9 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node --files ./src/temp.ts",
+    "get-verify-transaction-input": "ts-node --files ./src/get-verify-transaction-input.ts",
+    "get-verify-new-root-digest-input": "ts-node --files ./src/get-verify-new-root-digest-input.ts",
+    "get-transaction-proof": "ts-node --files ./src/get-transaction-proof.ts",
     "test": "jest"
   },
   "devDependencies": {
@@ -22,6 +25,7 @@
     "circomlib": "^2.0.2",
     "circomlibjs": "^0.1.1",
     "mongodb": "^4.1.4",
+    "snarkjs": "^0.4.10",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.3",
     "zokrates-js": "^1.0.35"

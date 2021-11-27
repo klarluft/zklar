@@ -12,11 +12,11 @@ template VerifyMerkleTreeCommitmentLevel() {
   signal output nextLevelDigest;
 
   signal siblingOnTheLeft;
-  signal isSiblingEqualZero;
 
   component poseidon = Poseidon(2);
   component isEqual = IsEqual();
-  component isZero = IsZero();
+  component isSiblingEqualZero = IsZero();
+  component isLevelDigestEqualZero = IsZero();
   component switcher = Switcher();
 
   var currentPowerOfTwo = 2 ** currentIndex;
@@ -34,10 +34,10 @@ template VerifyMerkleTreeCommitmentLevel() {
   poseidon.inputs[0] <== switcher.outL;
   poseidon.inputs[1] <== switcher.outR;
 
-  isZero.in <== sibling;
-  isSiblingEqualZero <== isZero.out;
+  isSiblingEqualZero.in <== sibling;
+  isLevelDigestEqualZero.in <== levelDigest;
 
-  nextLevelDigest <-- isSiblingEqualZero ? levelDigest : poseidon.out;
+  nextLevelDigest <-- isSiblingEqualZero.out || isLevelDigestEqualZero.out ? sibling + levelDigest : poseidon.out;
 }
 
 template VerifyMerkleTreeCommitment(nrOfLevels) {

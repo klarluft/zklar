@@ -13,69 +13,42 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
-      name: "DepositContract",
+      name: "NewRootDigestVerifierContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DepositContract__factory>;
+    ): Promise<Contracts.NewRootDigestVerifierContract__factory>;
     getContractFactory(
-      name: "BN256G2",
+      name: "TestVerifierContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BN256G2__factory>;
-    getContractFactory(
-      name: "DepositVerifierContract",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DepositVerifierContract__factory>;
-    getContractFactory(
-      name: "BN256G2",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BN256G2__factory>;
+    ): Promise<Contracts.TestVerifierContract__factory>;
     getContractFactory(
       name: "TransactionVerifierContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TransactionVerifierContract__factory>;
     getContractFactory(
-      name: "BN256G2",
+      name: "ZKlarContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BN256G2__factory>;
-    getContractFactory(
-      name: "UpdateVerifierContract",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.UpdateVerifierContract__factory>;
+    ): Promise<Contracts.ZKlarContract__factory>;
 
     getContractAt(
-      name: "DepositContract",
+      name: "NewRootDigestVerifierContract",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.DepositContract>;
+    ): Promise<Contracts.NewRootDigestVerifierContract>;
     getContractAt(
-      name: "BN256G2",
+      name: "TestVerifierContract",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.BN256G2>;
-    getContractAt(
-      name: "DepositVerifierContract",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.DepositVerifierContract>;
-    getContractAt(
-      name: "BN256G2",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.BN256G2>;
+    ): Promise<Contracts.TestVerifierContract>;
     getContractAt(
       name: "TransactionVerifierContract",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.TransactionVerifierContract>;
     getContractAt(
-      name: "BN256G2",
+      name: "ZKlarContract",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.BN256G2>;
-    getContractAt(
-      name: "UpdateVerifierContract",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.UpdateVerifierContract>;
+    ): Promise<Contracts.ZKlarContract>;
 
     // default types
     getContractFactory(

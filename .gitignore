@@ -1,6 +1,7 @@
 build
 client/src/contracts
 .DS_Store
+powersOfTau28_hez_final_18.ptau
 
 .eslintcache
 node_modules

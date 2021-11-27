@@ -17,7 +17,8 @@ import { numToZok } from "./utils/num-to-zok";
 // import { setupUpdateCircuit } from "./setup/setup-update-circuit";
 import { wasm } from "circom_tester";
 import { generateAccount } from "./account";
-import { generateCommitment } from "./commitment";
+import { generateCommitment, getCommitmentNullifier } from "./commitment";
+import { getVerifyNewRootDigestInput } from "./get-verify-new-root-digest-input";
 
 async function start() {
   // console.log("compile");
@@ -52,62 +53,6 @@ async function start() {
   // await setupDepositCircuit({ provider });
   // await setupTransactionCircuit({ provider });
   // await setupUpdateCircuit({ provider });
-
-  const poseidon = await buildPoseidon();
-
-  const person1 = generateAccount(poseidon, [10, 8]);
-  // const person2 = generateAccount([2, 18]);
-
-  const commitment = generateCommitment({
-    poseidon,
-    nonce: BigInt(1),
-    amount: 50,
-    owner_digest: person1.account_digest,
-  });
-
-  // const params = {
-  //   commitmentDigest: commitment.commitment_digest,
-  //   nonce: commitment.nonce,
-  //   amount: commitment.amount,
-  //   ownerDigest: commitment.owner_digest,
-  // };
-
-  // console.log("commitmentDigest", numToZok(params.commitmentDigest));
-  // console.log("nonce", numToZok(params.nonce));
-  // console.log("amount", numToZok(params.amount));
-  // console.log("ownerDigest", numToZok(params.ownerDigest));
-
-  // console.log("step 1");
-  // const circuit = await wasm(path.join(__dirname, "circuits", "verify-deposit.circom"));
-
-  // console.log("step 2");
-  // const circuitWitness = await circuit.calculateWitness(
-  //   {
-  //     commitmentDigest: numToZok(commitment.commitment_digest),
-  //     nonce: numToZok(commitment.nonce),
-  //     amount: numToZok(commitment.amount),
-  //     ownerDigest: numToZok(commitment.owner_digest),
-  //   },
-  //   true
-  // );
-
-  const commitment2 = generateCommitment({
-    poseidon,
-    nonce: BigInt(2),
-    amount: 10,
-    owner_digest: person1.account_digest,
-  });
-
-  const testDigest = poseidon.F.toObject(poseidon([commitment2.commitment_digest, commitment.commitment_digest]));
-
-  const transactionParams = {
-    rootDigest: numToZok(testDigest),
-    commitmentDigest: numToZok(commitment.commitment_digest),
-    commitmentIndex: numToZok(1),
-    siblings: [numToZok(commitment2.commitment_digest), ...[...new Array(256 - 1)].fill(numToZok(0))],
-  };
-
-  console.log(JSON.stringify(transactionParams, null, 2));
 
   if (!Number.isNaN(1)) return;
 

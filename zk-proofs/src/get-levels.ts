@@ -1,13 +1,13 @@
-import { poseidon } from "circomlibjs";
+import { Poseidon } from "./get-poseidon";
 
-export function getLevels(leafs: BigInt[], nrOfDigestsPerDigest: number): BigInt[][] {
+export function getLevels(poseidon: Poseidon, leafs: bigint[], nrOfDigestsPerDigest: number): bigint[][] {
   const digests = leafs;
   const levels = [digests];
   let currentLevel = 0;
   let rootDigestReached = false;
 
   while (rootDigestReached === false) {
-    const groupedLeafs = levels[currentLevel].reduce<BigInt[][]>((sum, n, index) => {
+    const groupedLeafs = levels[currentLevel].reduce<bigint[][]>((sum, n, index) => {
       const groupIndex = Math.floor(index / nrOfDigestsPerDigest);
       const group = sum[groupIndex] ?? [];
       sum[groupIndex] = [...group, n];

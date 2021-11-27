@@ -17,8 +17,11 @@ declare module "circomlibjs" {
   }
   export function buildPoseidon(): Promise<PoseidonFunction>;
 }
+
 declare module "zokrates-js/node";
-// declare module "babyjubjub";
+
+declare module "snarkjs";
+
 declare module "babyjubjub" {
   interface CipherPoint {
     x: string;
@@ -89,9 +92,7 @@ declare module "babyjubjub" {
     };
   }
   export const PublicKey: {
-    fromPrivate: (
-      privateKey: PrivateKey
-    ) => {
+    fromPrivate: (privateKey: PrivateKey) => {
       p: PublicKeyPoint;
     };
   };

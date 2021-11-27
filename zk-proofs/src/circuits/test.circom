@@ -1,17 +1,18 @@
 pragma circom 2.0.1;
 
-template Test() {
-  signal input index;
-  signal output out;
+template Multiplier(n) {
+    signal input a;
+    signal input b;
+    signal output c;
 
-  var middle;
+    signal int[n];
 
-  middle = index & 1;
+    int[0] <== a*a + b;
+    for (var i=1; i<n; i++) {
+    int[i] <== int[i-1]*int[i-1] + b;
+    }
 
-  out <-- middle;
-
-  log(index);
-  log(out);
+    c <== int[n-1];
 }
 
-component main {public [index]} = Test();
+component main = Multiplier(1000);
