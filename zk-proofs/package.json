@@ -8,10 +8,7 @@
   "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node --files ./src/temp.ts",
-    "get-verify-transaction-input": "ts-node --files ./src/get-verify-transaction-input.ts",
-    "get-verify-new-root-digest-input": "ts-node --files ./src/get-verify-new-root-digest-input.ts",
-    "get-transaction-proof": "ts-node --files ./src/get-transaction-proof.ts",
+    "start": "ts-node --files ./src/start.ts",
     "test": "jest"
   },
   "devDependencies": {

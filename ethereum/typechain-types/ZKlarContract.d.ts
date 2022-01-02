@@ -12,6 +12,7 @@ import {
   BaseContract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -22,11 +23,16 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 interface ZKlarContractInterface extends ethers.utils.Interface {
   functions: {
     "currentIndex()": FunctionFragment;
+    "deposit((uint256[2],uint256[2][2],uint256[2]),uint256)": FunctionFragment;
+    "depositVerifierContractAddress()": FunctionFragment;
+    "fullfilPendingDeposits(tuple[])": FunctionFragment;
     "newRootDigestVerifierContractAddress()": FunctionFragment;
     "nullifiers(uint256)": FunctionFragment;
+    "pendingDepositsBalances(uint256)": FunctionFragment;
     "rootDigest()": FunctionFragment;
     "rootDigests(uint256)": FunctionFragment;
     "setNullifier(uint256)": FunctionFragment;
+    "setPendingDepositsBalances(uint256,uint256)": FunctionFragment;
     "setRootDigest(uint256)": FunctionFragment;
     "transact((uint256,uint256,uint256,uint256),(uint256[2],uint256[2][2],uint256[2]),(uint256,uint256,uint256),(uint256[2],uint256[2][2],uint256[2]),(uint256[2],uint256[2][2],uint256[2]))": FunctionFragment;
     "transactionVerifierContractAddress()": FunctionFragment;
@@ -37,11 +43,44 @@ interface ZKlarContractInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "deposit",
+    values: [
+      {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      },
+      BigNumberish
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "depositVerifierContractAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fullfilPendingDeposits",
+    values: [
+      {
+        newRootDigestProof: {
+          a: [BigNumberish, BigNumberish];
+          b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+          c: [BigNumberish, BigNumberish];
+        };
+        newRootDigest: BigNumberish;
+        commitmentDigest: BigNumberish;
+      }[]
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "newRootDigestVerifierContractAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "nullifiers",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pendingDepositsBalances",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -55,6 +94,10 @@ interface ZKlarContractInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setNullifier",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPendingDepositsBalances",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setRootDigest",
@@ -100,11 +143,24 @@ interface ZKlarContractInterface extends ethers.utils.Interface {
     functionFragment: "currentIndex",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "depositVerifierContractAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "fullfilPendingDeposits",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "newRootDigestVerifierContractAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "nullifiers", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingDepositsBalances",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "rootDigest", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "rootDigests",
@@ -112,6 +168,10 @@ interface ZKlarContractInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setNullifier",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPendingDepositsBalances",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -124,8 +184,16 @@ interface ZKlarContractInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "Deposit(uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
 }
+
+export type DepositEvent = TypedEvent<
+  [BigNumber, BigNumber] & { commitmentDigest: BigNumber; amount: BigNumber }
+>;
 
 export class ZKlarContract extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -173,6 +241,33 @@ export class ZKlarContract extends BaseContract {
   functions: {
     currentIndex(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    deposit(
+      _depositProof: {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      },
+      _commitmentDigest: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    depositVerifierContractAddress(
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    fullfilPendingDeposits(
+      _pendingDepositFullfilments: {
+        newRootDigestProof: {
+          a: [BigNumberish, BigNumberish];
+          b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+          c: [BigNumberish, BigNumberish];
+        };
+        newRootDigest: BigNumberish;
+        commitmentDigest: BigNumberish;
+      }[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     newRootDigestVerifierContractAddress(
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -181,6 +276,11 @@ export class ZKlarContract extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    pendingDepositsBalances(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     rootDigest(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -191,6 +291,12 @@ export class ZKlarContract extends BaseContract {
 
     setNullifier(
       _nullifier: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setPendingDepositsBalances(
+      _commitmentDigest: BigNumberish,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -236,11 +342,41 @@ export class ZKlarContract extends BaseContract {
 
   currentIndex(overrides?: CallOverrides): Promise<BigNumber>;
 
+  deposit(
+    _depositProof: {
+      a: [BigNumberish, BigNumberish];
+      b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+      c: [BigNumberish, BigNumberish];
+    },
+    _commitmentDigest: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  depositVerifierContractAddress(overrides?: CallOverrides): Promise<string>;
+
+  fullfilPendingDeposits(
+    _pendingDepositFullfilments: {
+      newRootDigestProof: {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      };
+      newRootDigest: BigNumberish;
+      commitmentDigest: BigNumberish;
+    }[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   newRootDigestVerifierContractAddress(
     overrides?: CallOverrides
   ): Promise<string>;
 
   nullifiers(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
+  pendingDepositsBalances(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   rootDigest(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -248,6 +384,12 @@ export class ZKlarContract extends BaseContract {
 
   setNullifier(
     _nullifier: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setPendingDepositsBalances(
+    _commitmentDigest: BigNumberish,
+    _amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -293,11 +435,41 @@ export class ZKlarContract extends BaseContract {
   callStatic: {
     currentIndex(overrides?: CallOverrides): Promise<BigNumber>;
 
+    deposit(
+      _depositProof: {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      },
+      _commitmentDigest: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    depositVerifierContractAddress(overrides?: CallOverrides): Promise<string>;
+
+    fullfilPendingDeposits(
+      _pendingDepositFullfilments: {
+        newRootDigestProof: {
+          a: [BigNumberish, BigNumberish];
+          b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+          c: [BigNumberish, BigNumberish];
+        };
+        newRootDigest: BigNumberish;
+        commitmentDigest: BigNumberish;
+      }[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     newRootDigestVerifierContractAddress(
       overrides?: CallOverrides
     ): Promise<string>;
 
     nullifiers(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
+    pendingDepositsBalances(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     rootDigest(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -308,6 +480,12 @@ export class ZKlarContract extends BaseContract {
 
     setNullifier(
       _nullifier: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPendingDepositsBalances(
+      _commitmentDigest: BigNumberish,
+      _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -351,16 +529,64 @@ export class ZKlarContract extends BaseContract {
     ): Promise<string>;
   };
 
-  filters: {};
+  filters: {
+    "Deposit(uint256,uint256)"(
+      commitmentDigest?: BigNumberish | null,
+      amount?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { commitmentDigest: BigNumber; amount: BigNumber }
+    >;
+
+    Deposit(
+      commitmentDigest?: BigNumberish | null,
+      amount?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { commitmentDigest: BigNumber; amount: BigNumber }
+    >;
+  };
 
   estimateGas: {
     currentIndex(overrides?: CallOverrides): Promise<BigNumber>;
+
+    deposit(
+      _depositProof: {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      },
+      _commitmentDigest: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    depositVerifierContractAddress(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    fullfilPendingDeposits(
+      _pendingDepositFullfilments: {
+        newRootDigestProof: {
+          a: [BigNumberish, BigNumberish];
+          b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+          c: [BigNumberish, BigNumberish];
+        };
+        newRootDigest: BigNumberish;
+        commitmentDigest: BigNumberish;
+      }[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     newRootDigestVerifierContractAddress(
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     nullifiers(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    pendingDepositsBalances(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -374,6 +600,12 @@ export class ZKlarContract extends BaseContract {
 
     setNullifier(
       _nullifier: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setPendingDepositsBalances(
+      _commitmentDigest: BigNumberish,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -420,11 +652,43 @@ export class ZKlarContract extends BaseContract {
   populateTransaction: {
     currentIndex(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    deposit(
+      _depositProof: {
+        a: [BigNumberish, BigNumberish];
+        b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+        c: [BigNumberish, BigNumberish];
+      },
+      _commitmentDigest: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    depositVerifierContractAddress(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    fullfilPendingDeposits(
+      _pendingDepositFullfilments: {
+        newRootDigestProof: {
+          a: [BigNumberish, BigNumberish];
+          b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
+          c: [BigNumberish, BigNumberish];
+        };
+        newRootDigest: BigNumberish;
+        commitmentDigest: BigNumberish;
+      }[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     newRootDigestVerifierContractAddress(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     nullifiers(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    pendingDepositsBalances(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -438,6 +702,12 @@ export class ZKlarContract extends BaseContract {
 
     setNullifier(
       _nullifier: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPendingDepositsBalances(
+      _commitmentDigest: BigNumberish,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

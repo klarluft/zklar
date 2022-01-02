@@ -5,17 +5,14 @@ import chaiAsPromised from "chai-as-promised";
 import { solidity } from "ethereum-waffle";
 import { ethers } from "hardhat";
 
-import {
-  getPoseidon,
-  generateAccount,
-  generateCommitment,
-  bigIntToHex,
-  generateTransactionProof,
-  Proof,
-  generateNewRootDigestProof,
-} from "zk-proofs";
+import { getPoseidon, generateAccount, generateCommitment, bigIntToHex, generateProof, Proof } from "zk-proofs";
 import { getCommitmentNullifier } from "zk-proofs/build/commitment";
-import type { TransactionVerifierContract, NewRootDigestVerifierContract, ZKlarContract } from "../typechain-types";
+import type {
+  TransactionVerifierContract,
+  NewRootDigestVerifierContract,
+  ZKlarContract,
+  DepositVerifierContract,
+} from "../typechain-types";
 
 chai.use(solidity);
 chai.use(chaiAsPromised);
@@ -41,42 +38,8 @@ function reshapeProof(proof: Proof<"groth16", "bn128">): SolidityProof {
   };
 }
 
-describe.skip("test", () => {
-  it("works", async () => {
-    const verifyTestWebAssemblyFilePath = path.join(__dirname, "test.wasm");
-    const verifyTestZkeyFilePath = path.join(__dirname, "test_final.zkey");
-
-    console.log("testProof");
-    const { proof: testProof, publicSignals: testPublicSignals } = await generateTransactionProof({
-      input: { a: bigIntToHex(3), b: bigIntToHex(11) },
-      webAssemblyFilePath: verifyTestWebAssemblyFilePath,
-      zkeyFilePath: verifyTestZkeyFilePath,
-    });
-
-    console.log("testProof", testProof);
-    console.log("testPublicSignals", testPublicSignals);
-
-    // if (!Number.isNaN(1)) return;
-
-    const signers = await ethers.getSigners();
-
-    const testVerifierContractFactory = await ethers.getContractFactory("TestVerifierContract", signers[0]);
-
-    const testVerifierContract = await testVerifierContractFactory.deploy();
-    await testVerifierContract.deployed();
-
-    const reshapedProof = reshapeProof(testProof);
-
-    console.log("transact");
-    const response = await testVerifierContract.verifyProof(reshapedProof.a, reshapedProof.b, reshapedProof.c, [
-      testPublicSignals[0],
-    ]);
-
-    console.log("response", response);
-  });
-});
-
 describe("ZKlarContract", () => {
+  let depositVerifierContract: DepositVerifierContract;
   let transactionVerifierContract: TransactionVerifierContract;
   let newRootDigestVerifierContract: NewRootDigestVerifierContract;
   let zKlarContract: ZKlarContract;
@@ -84,6 +47,8 @@ describe("ZKlarContract", () => {
   beforeEach(async () => {
     console.log("beforeEach");
     const signers = await ethers.getSigners();
+
+    const depositVerifierContractFactory = await ethers.getContractFactory("DepositVerifierContract", signers[0]);
 
     const transactionVerifierContractFactory = await ethers.getContractFactory(
       "TransactionVerifierContract",
@@ -97,6 +62,9 @@ describe("ZKlarContract", () => {
 
     const zKlarContractFactory = await ethers.getContractFactory("ZKlarContract", signers[0]);
 
+    depositVerifierContract = await depositVerifierContractFactory.deploy();
+    await depositVerifierContract.deployed();
+
     transactionVerifierContract = await transactionVerifierContractFactory.deploy();
     await transactionVerifierContract.deployed();
 
@@ -104,13 +72,153 @@ describe("ZKlarContract", () => {
     await newRootDigestVerifierContract.deployed();
 
     zKlarContract = await zKlarContractFactory.deploy(
+      depositVerifierContract.address,
       transactionVerifierContract.address,
       newRootDigestVerifierContract.address
     );
     await zKlarContract.deployed();
   });
 
-  describe("transact", function () {
+  describe.skip("deposit", function () {
+    // 5 min timeout
+    this.timeout(5 * 60 * 1000);
+
+    it("deposits", async () => {
+      const poseidon = await getPoseidon();
+      const person1 = generateAccount(poseidon, [10, 8]);
+      const amount = 50;
+      const commitment1 = generateCommitment({
+        poseidon,
+        nonce: BigInt(1),
+        amount,
+        owner_digest: person1.account_digest,
+      });
+
+      const verifyDepositInput = {
+        commitmentDigest: bigIntToHex(commitment1.commitment_digest),
+        nonce: bigIntToHex(commitment1.nonce),
+        amount: bigIntToHex(commitment1.amount),
+        ownerDigest: bigIntToHex(commitment1.owner_digest),
+      };
+
+      const verifyDepositWebAssemblyFilePath = path.join(__dirname, "verify-deposit.wasm");
+      const verifyDepositZkeyFilePath = path.join(__dirname, "verify-deposit_final.zkey");
+
+      const { proof: depositProof } = await generateProof({
+        input: verifyDepositInput,
+        webAssemblyFilePath: verifyDepositWebAssemblyFilePath,
+        zkeyFilePath: verifyDepositZkeyFilePath,
+      });
+
+      const solidityParams = {
+        _depositProof: reshapeProof(depositProof),
+        _commitmentDigest: bigIntToHex(commitment1.commitment_digest),
+      };
+
+      await zKlarContract.deposit(solidityParams._depositProof, solidityParams._commitmentDigest, { value: amount });
+
+      expect(await zKlarContract.pendingDepositsBalances(bigIntToHex(commitment1.commitment_digest))).to.be.equal(
+        amount
+      );
+    });
+  });
+
+  describe("fullfil pending deposits", function () {
+    // 5 min timeout
+    this.timeout(5 * 60 * 1000);
+
+    it("fullfil pending deposits", async () => {
+      const poseidon = await getPoseidon();
+
+      const person1 = generateAccount(poseidon, [10, 8]);
+      const amount1 = 50;
+      const commitment1 = generateCommitment({
+        poseidon,
+        nonce: BigInt(1),
+        amount: amount1,
+        owner_digest: person1.account_digest,
+      });
+      const rootDigest1 = commitment1.commitment_digest;
+
+      const person2 = generateAccount(poseidon, [11, 9]);
+      const amount2 = 50;
+      const commitment2 = generateCommitment({
+        poseidon,
+        nonce: BigInt(2),
+        amount: amount2,
+        owner_digest: person2.account_digest,
+      });
+      const rootDigest2 = poseidon([commitment1.commitment_digest, commitment2.commitment_digest]);
+
+      const person3 = generateAccount(poseidon, [11, 9]);
+      const amount3 = 50;
+      const commitment3 = generateCommitment({
+        poseidon,
+        nonce: BigInt(3),
+        amount: amount3,
+        owner_digest: person3.account_digest,
+      });
+      const rootDigest3 = poseidon([rootDigest2, commitment3.commitment_digest]);
+
+      const verifyNewRootDigestWebAssemblyFilePath = path.join(__dirname, "verify-new-root-digest.wasm");
+      const verifyNewRootDigestZkeyFilePath = path.join(__dirname, "verify-new-root-digest_final.zkey");
+
+      const verifyNewRootDigest1Input = {
+        oldRootDigest: bigIntToHex(rootDigest1),
+        oldCommitmentDigest: bigIntToHex(0),
+        newRootDigest: bigIntToHex(rootDigest2),
+        newCommitmentDigest: bigIntToHex(commitment2.commitment_digest),
+        commitmentIndex: bigIntToHex(1),
+        siblings: [bigIntToHex(commitment1.commitment_digest), ...[...new Array(42 - 1)].fill(bigIntToHex(0))],
+      };
+
+      const verifyNewRootDigest2Input = {
+        oldRootDigest: bigIntToHex(rootDigest2),
+        oldCommitmentDigest: bigIntToHex(0),
+        newRootDigest: bigIntToHex(rootDigest3),
+        newCommitmentDigest: bigIntToHex(commitment3.commitment_digest),
+        commitmentIndex: bigIntToHex(2),
+        siblings: [bigIntToHex(0), bigIntToHex(rootDigest2), ...[...new Array(42 - 2)].fill(bigIntToHex(0))],
+      };
+
+      const { proof: verifyNewRootDigest1Proof } = await generateProof({
+        input: verifyNewRootDigest1Input,
+        webAssemblyFilePath: verifyNewRootDigestWebAssemblyFilePath,
+        zkeyFilePath: verifyNewRootDigestZkeyFilePath,
+      });
+
+      const { proof: verifyNewRootDigest2Proof } = await generateProof({
+        input: verifyNewRootDigest2Input,
+        webAssemblyFilePath: verifyNewRootDigestWebAssemblyFilePath,
+        zkeyFilePath: verifyNewRootDigestZkeyFilePath,
+      });
+
+      await zKlarContract.setRootDigest(rootDigest1);
+      await zKlarContract.setPendingDepositsBalances(commitment2.commitment_digest, commitment2.amount);
+      await zKlarContract.setPendingDepositsBalances(commitment3.commitment_digest, commitment3.amount);
+
+      const result = await zKlarContract.fullfilPendingDeposits([
+        {
+          newRootDigestProof: reshapeProof(verifyNewRootDigest1Proof),
+          newRootDigest: bigIntToHex(rootDigest2),
+          commitmentDigest: bigIntToHex(commitment2.commitment_digest),
+        },
+        {
+          newRootDigestProof: reshapeProof(verifyNewRootDigest2Proof),
+          newRootDigest: bigIntToHex(rootDigest3),
+          commitmentDigest: bigIntToHex(commitment3.commitment_digest),
+        },
+      ]);
+
+      expect(await zKlarContract.rootDigest()).to.be.equal(rootDigest3);
+      expect(await zKlarContract.pendingDepositsBalances(bigIntToHex(commitment2.commitment_digest))).to.be.equal(0);
+      expect(await zKlarContract.pendingDepositsBalances(bigIntToHex(commitment3.commitment_digest))).to.be.equal(0);
+
+      console.log("result", result);
+    });
+  });
+
+  describe.skip("transact", function () {
     // 5 min timeout
     this.timeout(5 * 60 * 1000);
 
@@ -177,7 +285,7 @@ describe("ZKlarContract", () => {
         commitment0Index: bigIntToHex(0),
         commitment0Siblings: [
           bigIntToHex(commitment2.commitment_digest),
-          ...[...new Array(256 - 1)].fill(bigIntToHex(0)),
+          ...[...new Array(42 - 1)].fill(bigIntToHex(0)),
         ],
 
         commitment1Nullifier: bigIntToHex(commitment2Nullifier),
@@ -192,7 +300,7 @@ describe("ZKlarContract", () => {
         commitment1Index: bigIntToHex(1),
         commitment1Siblings: [
           bigIntToHex(commitment1.commitment_digest),
-          ...[...new Array(256 - 1)].fill(bigIntToHex(0)),
+          ...[...new Array(42 - 1)].fill(bigIntToHex(0)),
         ],
 
         newCommitment0Digest: bigIntToHex(commitment3.commitment_digest),
@@ -216,7 +324,7 @@ describe("ZKlarContract", () => {
       const verifyTransactionZkeyFilePath = path.join(__dirname, "verify-transaction_final.zkey");
 
       console.log("transactionProof");
-      const { proof: transactionProof } = await generateTransactionProof({
+      const { proof: transactionProof } = await generateProof({
         input: verifyTransactionInput,
         webAssemblyFilePath: verifyTransactionWebAssemblyFilePath,
         zkeyFilePath: verifyTransactionZkeyFilePath,
@@ -231,11 +339,11 @@ describe("ZKlarContract", () => {
         newRootDigest: bigIntToHex(rootDigest2),
         newCommitmentDigest: verifyTransactionInput.newCommitment0Digest,
         commitmentIndex: bigIntToHex(2),
-        siblings: [bigIntToHex(0), bigIntToHex(rootDigest1), ...[...new Array(256 - 2)].fill(bigIntToHex(0))],
+        siblings: [bigIntToHex(0), bigIntToHex(rootDigest1), ...[...new Array(42 - 2)].fill(bigIntToHex(0))],
       };
 
       console.log("verifyNewRootDigest1Proof");
-      const { proof: verifyNewRootDigest1Proof } = await generateNewRootDigestProof({
+      const { proof: verifyNewRootDigest1Proof } = await generateProof({
         input: verifyNewRootDigest1Input,
         webAssemblyFilePath: verifyNewRootDigestWebAssemblyFilePath,
         zkeyFilePath: verifyNewRootDigestZkeyFilePath,
@@ -250,12 +358,12 @@ describe("ZKlarContract", () => {
         siblings: [
           verifyTransactionInput.newCommitment0Digest,
           bigIntToHex(rootDigest1),
-          ...[...new Array(256 - 2)].fill(bigIntToHex(0)),
+          ...[...new Array(42 - 2)].fill(bigIntToHex(0)),
         ],
       };
 
       console.log("verifyNewRootDigest2Proof");
-      const { proof: verifyNewRootDigest2Proof } = await generateNewRootDigestProof({
+      const { proof: verifyNewRootDigest2Proof } = await generateProof({
         input: verifyNewRootDigest2Input,
         webAssemblyFilePath: verifyNewRootDigestWebAssemblyFilePath,
         zkeyFilePath: verifyNewRootDigestZkeyFilePath,

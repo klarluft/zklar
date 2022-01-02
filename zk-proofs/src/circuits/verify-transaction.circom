@@ -127,4 +127,4 @@ component main { public [
   commitment1Nullifier,
   newCommitment0Digest,
   newCommitment1Digest
-] } = VerifyTransaction(256);
+] } = VerifyTransaction(42);

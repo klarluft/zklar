@@ -43,4 +43,4 @@ component main { public [
   newRootDigest,
   newCommitmentDigest,
   commitmentIndex
-] } = VerifyNewRootDigest(256);
+] } = VerifyNewRootDigest(42);

@@ -1,5 +1,5 @@
 {
-  "name": "arbitrum-messages",
+  "name": "zklar",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Michal Wrzosek <michal@wrzosek.pl>",
@@ -9,7 +9,8 @@
     "blockchain",
     "ethereum",
     "client",
-    "zk-proofs"
+    "zk-proofs",
+    "service"
   ],
   "scripts": {
     "start": "yarn workspace client start"

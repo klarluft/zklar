@@ -13,13 +13,13 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "DepositVerifierContract",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DepositVerifierContract__factory>;
+    getContractFactory(
       name: "NewRootDigestVerifierContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NewRootDigestVerifierContract__factory>;
-    getContractFactory(
-      name: "TestVerifierContract",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.TestVerifierContract__factory>;
     getContractFactory(
       name: "TransactionVerifierContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -30,15 +30,15 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.ZKlarContract__factory>;
 
     getContractAt(
+      name: "DepositVerifierContract",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DepositVerifierContract>;
+    getContractAt(
       name: "NewRootDigestVerifierContract",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.NewRootDigestVerifierContract>;
-    getContractAt(
-      name: "TestVerifierContract",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.TestVerifierContract>;
     getContractAt(
       name: "TransactionVerifierContract",
       address: string,

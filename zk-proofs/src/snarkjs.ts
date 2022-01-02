@@ -13,6 +13,21 @@ export interface Proof<Protocol extends Protocols, Curve extends Curves> {
   curve: Curve;
 }
 
+export interface VerificationKey<Protocol extends Protocols, Curve extends Curves> {
+  protocol: Protocol;
+  curve: Curve;
+  nPublic: number;
+  vk_alpha_1: [string, string, string];
+  vk_beta_2: [[string, string], [string, string], [string, string]];
+  vk_gamma_2: [[string, string], [string, string], [string, string]];
+  vk_delta_2: [[string, string], [string, string], [string, string]];
+  vk_alphabeta_12: [
+    [[string, string], [string, string], [string, string]],
+    [[string, string], [string, string], [string, string]]
+  ];
+  IC: [string, string, string][];
+}
+
 export type PublicSignals = string[];
 
 export interface Groth16 {
@@ -24,6 +39,12 @@ export interface Groth16 {
     proof: Proof<"groth16", "bn128">;
     publicSignals: PublicSignals;
   }>;
+
+  verify: (
+    vKey: VerificationKey<"groth16", "bn128">,
+    publicSignals: PublicSignals,
+    proof: Proof<"groth16", "bn128">
+  ) => Promise<boolean>;
 }
 
 export interface SnarkJS {

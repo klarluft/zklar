@@ -4,6 +4,7 @@ pragma solidity ^0.6.11;
 pragma experimental ABIEncoderV2;
 
 import "hardhat/console.sol";
+import { DepositVerifierContract } from "./DepositVerifierContract.sol";
 import { TransactionVerifierContract } from "./TransactionVerifierContract.sol";
 import { NewRootDigestVerifierContract } from "./NewRootDigestVerifierContract.sol";
 
@@ -11,9 +12,11 @@ contract ZKlarContract {
   uint public rootDigest;
   uint public currentIndex;
   mapping(uint => bool) public rootDigests;
+  address public depositVerifierContractAddress;
   address public transactionVerifierContractAddress;
   address public newRootDigestVerifierContractAddress;
   mapping(uint => bool) public nullifiers;
+  mapping(uint => uint256) public pendingDepositsBalances;
 
   struct Proof {
     uint[2] a;
@@ -34,13 +37,17 @@ contract ZKlarContract {
     uint commitment1Nullifier;
   }
 
+  event Deposit(uint indexed commitmentDigest, uint256 amount);
+
   constructor(
+    address _depositVerifierContractAddress,
     address _transactionVerifierContractAddress,
     address _newRootDigestVerifierContractAddress
   ) public {
     rootDigest = 0;
     currentIndex = 0;
     rootDigests[0] = true;
+    depositVerifierContractAddress = _depositVerifierContractAddress;
     transactionVerifierContractAddress = _transactionVerifierContractAddress;
     newRootDigestVerifierContractAddress = _newRootDigestVerifierContractAddress;
   }
@@ -57,6 +64,82 @@ contract ZKlarContract {
     uint _nullifier
   ) public {
     nullifiers[_nullifier] = true;
+  }
+
+  function setPendingDepositsBalances(
+    uint _commitmentDigest,
+    uint256 _amount
+  ) public {
+    pendingDepositsBalances[_commitmentDigest] = _amount;
+  }
+
+  function deposit(
+    Proof memory _depositProof,
+    uint _commitmentDigest
+  ) public payable {
+    require(msg.value > 0, "Sent amount needs to be higher then zero");
+    require(pendingDepositsBalances[_commitmentDigest] == 0, "This commitment is already deposited");
+
+    DepositVerifierContract depositVerifierContract = DepositVerifierContract(
+      address(depositVerifierContractAddress)
+    );
+    
+    uint[3] memory depositVerifierContractInputs = [
+      1,
+      _commitmentDigest,
+      msg.value
+    ];
+
+    bool response = depositVerifierContract.verifyProof(
+      _depositProof.a,
+      _depositProof.b,
+      _depositProof.c,
+      depositVerifierContractInputs
+    );
+
+    require(response, "Invalid deposit proof");
+
+    pendingDepositsBalances[_commitmentDigest] += msg.value;
+    
+    emit Deposit(_commitmentDigest, msg.value);
+  }
+
+  struct PendingDepositFullfilment {
+    Proof newRootDigestProof;
+    uint newRootDigest;
+    uint commitmentDigest;
+  }
+
+  function fullfilPendingDeposits(PendingDepositFullfilment[] memory _pendingDepositFullfilments) public {
+    NewRootDigestVerifierContract newRootDigestVerifierContract = NewRootDigestVerifierContract(
+      address(newRootDigestVerifierContractAddress)
+    );
+
+    for (uint256 index = 0; index < _pendingDepositFullfilments.length; index++) {
+      uint[6] memory _newRootDigestVerifierContractInputs = [
+        1,
+        rootDigest,
+        0,
+        _pendingDepositFullfilments[index].newRootDigest,
+        _pendingDepositFullfilments[index].commitmentDigest,
+        currentIndex
+      ];
+
+      bool newRootDigestVerifierContractResponse = newRootDigestVerifierContract.verifyProof(
+        _pendingDepositFullfilments[index].newRootDigestProof.a,
+        _pendingDepositFullfilments[index].newRootDigestProof.b,
+        _pendingDepositFullfilments[index].newRootDigestProof.c,
+        _newRootDigestVerifierContractInputs
+      );
+
+      require(newRootDigestVerifierContractResponse, "Invalid new root digest proof");
+
+      rootDigest = _pendingDepositFullfilments[index].newRootDigest;
+      currentIndex++;
+      pendingDepositsBalances[_pendingDepositFullfilments[index].commitmentDigest] = 0;
+    }
+
+    rootDigests[rootDigest] = true;
   }
 
   function transact(

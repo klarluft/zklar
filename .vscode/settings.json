@@ -3,5 +3,5 @@
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "solidity.compileUsingRemoteVersion": "v0.6.11+commit.5ef660b1",
-  "eslint.workingDirectories": ["blockchain", "client"]
+  "eslint.workingDirectories": ["blockchain", "client", "service"]
 }
