@@ -55,30 +55,32 @@ test('verifyTransactionProof', async (t) => {
   const person1 = generateAccount(poseidon, [10, 8]);
   const person2 = generateAccount(poseidon, [2, 18]);
 
+  const nonce = 1;
+
   const commitment1 = generateCommitment({
     poseidon,
-    nonce: BigInt(1),
+    nonce: BigInt(1 + nonce),
     amount: 50,
     owner_digest: person1.account_digest,
   });
 
   const commitment2 = generateCommitment({
     poseidon,
-    nonce: BigInt(2),
+    nonce: BigInt(2 + nonce),
     amount: 10,
     owner_digest: person1.account_digest,
   });
 
   const commitment3 = generateCommitment({
     poseidon,
-    nonce: BigInt(3),
+    nonce: BigInt(3 + nonce),
     amount: 13,
     owner_digest: person2.account_digest,
   });
 
   const commitment4 = generateCommitment({
     poseidon,
-    nonce: BigInt(4),
+    nonce: BigInt(4 + nonce),
     amount: 60 - 13,
     owner_digest: person1.account_digest,
   });
@@ -182,6 +184,8 @@ test('verifyTransactionProof', async (t) => {
     newCommitment0Digest: verifyTransactionInput.newCommitment0Digest,
     newCommitment1Digest: verifyTransactionInput.newCommitment1Digest,
   };
+
+  console.log(JSON.stringify({ input }));
 
   t.is(await verifyTransactionProof(input), true);
 });

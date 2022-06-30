@@ -3,5 +3,18 @@
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "solidity.compileUsingRemoteVersion": "v0.6.11+commit.5ef660b1",
-  "eslint.workingDirectories": ["blockchain", "client", "service"]
+  "eslint.workingDirectories": ["blockchain", "client", "service"],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/build": true,
+    "**/tsconfig.tsbuildinfo": true,
+    "**/yarn-error.log": true,
+    "**/mongodb_data": true,
+    "**/.nyc_output": true
+  }
 }

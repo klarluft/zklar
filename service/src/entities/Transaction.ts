@@ -34,4 +34,8 @@ export class Transaction extends BaseEntity {
   @Field()
   @Column()
   newCommitment1Digest: string;
+
+  @Field()
+  @Column()
+  createdAt: number;
 }

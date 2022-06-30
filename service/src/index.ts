@@ -8,6 +8,8 @@ import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 
 import { setupPoseidon } from './lib/poseidon';
+import { CommitmentResolver } from './resolvers/CommitmentResolver';
+import { NullifierResolver } from './resolvers/NullifierResolver';
 import { TransactionResolver } from './resolvers/TransactionResolver';
 
 const startServer = async () => {
@@ -19,10 +21,11 @@ const startServer = async () => {
     synchronize: true,
     entities: ['./src/entities/*.ts'],
     authSource: 'admin',
+    useUnifiedTopology: true,
   });
 
   const schema = await buildSchema({
-    resolvers: [TransactionResolver],
+    resolvers: [TransactionResolver, NullifierResolver, CommitmentResolver],
   });
 
   const app = express();
