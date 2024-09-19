@@ -18,6 +18,6 @@
     "composite": true,
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts", "src/**/*.json", "src/get-transaction-proof.js"],
+  "include": ["src/**/*.ts", "src/**/*.json"],
   "exclude": ["node_modules", "build", "src/memo/*.json"]
 }

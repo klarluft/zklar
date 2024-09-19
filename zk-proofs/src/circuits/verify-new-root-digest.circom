@@ -1,4 +1,4 @@
-pragma circom 2.0.1;
+pragma circom 2.1.9;
 
 include "./verify-merkle-tree-commitment.circom";
 
@@ -14,7 +14,7 @@ template VerifyNewRootDigest(nrOfLevels) {
   var i;
 
   component verifyMerkleTreeCommitment[2];
-  
+
   verifyMerkleTreeCommitment[0] = VerifyMerkleTreeCommitment(nrOfLevels);
   verifyMerkleTreeCommitment[0].rootDigest <== oldRootDigest;
   verifyMerkleTreeCommitment[0].commitmentDigest <== oldCommitmentDigest;

@@ -10,7 +10,8 @@
     "ethereum",
     "client",
     "zk-proofs",
-    "service"
+    "service",
+    "node"
   ],
   "scripts": {
     "start": "yarn workspace client start"

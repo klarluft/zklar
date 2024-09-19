@@ -1,4 +1,4 @@
-pragma circom 2.0.1;
+pragma circom 2.1.9;
 
 include "./circomlib/circuits/poseidon.circom";
 include "./circomlib/circuits/comparators.circom";
@@ -52,7 +52,7 @@ template VerifyMerkleTreeCommitment(nrOfLevels) {
   component verifyLevel[nrOfLevels];
   for (i = 0; i < nrOfLevels; i++) {
     verifyLevel[i] = VerifyMerkleTreeCommitmentLevel();
-    
+
     if (i == 0) {
       verifyLevel[i].levelDigest <== commitmentDigest;
     } else {

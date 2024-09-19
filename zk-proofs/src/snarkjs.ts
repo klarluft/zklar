@@ -5,7 +5,7 @@ export interface Logger {
 export type Protocols = "groth16";
 export type Curves = "bn128";
 
-export interface Proof<Protocol extends Protocols, Curve extends Curves> {
+export interface ZKSnarkProof<Protocol extends Protocols, Curve extends Curves> {
   pi_a: [string, string, string];
   pi_b: [[string, string], [string, string], [string, string]];
   pi_c: [string, string, string];
@@ -36,14 +36,14 @@ export interface Groth16 {
     witnessBuffer: Uint8Array,
     logger?: Logger
   ) => Promise<{
-    proof: Proof<"groth16", "bn128">;
+    proof: ZKSnarkProof<"groth16", "bn128">;
     publicSignals: PublicSignals;
   }>;
 
   verify: (
     vKey: VerificationKey<"groth16", "bn128">,
     publicSignals: PublicSignals,
-    proof: Proof<"groth16", "bn128">
+    proof: ZKSnarkProof<"groth16", "bn128">
   ) => Promise<boolean>;
 }
 

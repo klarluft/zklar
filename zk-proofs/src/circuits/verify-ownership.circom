@@ -1,4 +1,4 @@
-pragma circom 2.0.1;
+pragma circom 2.1.9;
 
 include "./circomlib/circuits/poseidon.circom";
 include "./circomlib/circuits/comparators.circom";
@@ -62,3 +62,7 @@ template VerifyOwnership() {
 
   isVerified <-- isCommitmentDigestVerified && isOwnerDigestVerified && isNullifierVerified;
 }
+
+component main { public [
+  commitmentDigest
+] } = VerifyOwnership();

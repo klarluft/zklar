@@ -1,4 +1,4 @@
-pragma circom 2.0.1;
+pragma circom 2.1.9;
 
 include "./verify-ownership.circom";
 include "./verify-merkle-tree-commitment.circom";
@@ -15,7 +15,7 @@ template VerifyTransaction(nrOfLevels) {
   signal input commitment0OwnerDigestPreimage[2];
   signal input commitment0Index;
   signal input commitment0Siblings[nrOfLevels];
-  
+
   signal input commitment1Nullifier;
   signal input commitment1Digest;
   signal input commitment1Nonce;
@@ -115,7 +115,7 @@ template VerifyTransaction(nrOfLevels) {
     verifyNewCommitment[0].isVerified &&
     verifyNewCommitment[1].isVerified &&
     isAmountEqual.out;
-  
+
   assert(isVerified);
 
   log(isVerified);
